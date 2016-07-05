@@ -1,0 +1,22 @@
+{
+  "name": "biathlon",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "supervisor ./bin/www"
+  },
+  "author": "John W. Fail<john@ptarmigan.fi>",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.4.1",
+    "body-parser": "~1.13.2",
+    "chai": "~1.8.1",
+    "connect-flash": "^0.1.1",
+    "debug": "~2.2.0",
+    "express": "~4.13.1",
+    "mocha": "~1.14.0",
+    "morgan": "~1.6.1",
+    "pg-promise": "^5.0.5",
+    "should": "~2.1.0"
+  }
+}
