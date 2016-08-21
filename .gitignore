@@ -2,7 +2,8 @@
 logs
 *.log
 npm-debug.log*
-
+.node*
+public/favicon.ico
 # Runtime data
 pids
 *.pid

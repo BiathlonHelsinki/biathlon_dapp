@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "supervisor ./bin/www"
+    "start": "PORT=3001 supervisor  ./bin/www"
   },
   "author": "John W. Fail<john@ptarmigan.fi>",
   "license": "MIT",
@@ -17,6 +17,7 @@
     "mocha": "~1.14.0",
     "morgan": "~1.6.1",
     "pg-promise": "^5.0.5",
-    "should": "~2.1.0"
+    "should": "~2.1.0",
+    "web3_ipc": "^1.2.0"
   }
 }
