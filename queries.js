@@ -37,7 +37,8 @@ module.exports = {
   spendTokens: spendTokens,
   get_account_balance: getAccountBalance,
   create_account: createAccount,
-  transfer_tokens: transferTokens
+  transfer_tokens: transferTokens,
+  transfer_tokens_from_owner: transferTokensFromOwner
   // transactionHistory: transactionHistory
 };
 
@@ -93,17 +94,6 @@ function createAccount(req, res, next) {
 
 
 
-function contract_mint(contract, receiver, tokens) {
-  return new promise(function(resolve, reject) {
-    var settings = getSettings();
-    return settings.then(function(settings) {
-      return contract.mintToken(receiver, tokens, {from: settings.coinbase}, function(err, data) {
-        if(err !== null) return reject(err);
-        resolve(data);
-      });
-    });
-  });
-}
 
 
 function mintTokens(req, res, next) {
@@ -139,6 +129,25 @@ function spendTokens(req,res,next) {
       res.status(200)
         .json({status: 'success',
           message: 'Spent ' + req.body.tokens + ' tokens from account ' + req.body.sender
+        })
+    });
+  }).catch(function(err) {
+       console.log("ERROR:", err);
+  });
+}
+
+function transferTokensFromOwner(req,res,next) {
+  req.body.tokens = parseInt(req.body.tokens);
+  return connectToBlockchain().then(function(contract) {
+    var spendbill = contract_transfer_from_owner(contract, req.body.sender, req.body.recipient, req.body.tokens);
+    return spendbill.then(function(txhash) {
+      db.none('INSERT INTO ethtransactions (txaddress, transaction_type_id, source_account, recipient_account, value, timeof, created_at, updated_at)' + 
+      'VALUES(${txhash}, 3, ${sender}, ${recipient}, ${tokens}, now(), now(), now() )',  {txhash: txhash, sender: req.body.sender, recipient: req.body.recipient, tokens: req.body.tokens});
+      return txhash;
+    }).then(function(txhash) {
+      res.status(200)
+      .json({status: 'success', data: txhash,
+          message: 'Transfered ' + req.body.tokens + ' tokens from account ' + req.body.sender + ' to account ' + req.body.recipient
         })
     });
   }).catch(function(err) {
@@ -225,6 +234,31 @@ function contract_transfer(contract, sender, recipient, tokens, password) {
     });
   });
 }
+
+function contract_mint(contract, receiver, tokens) {
+  return new promise(function(resolve, reject) {
+    var settings = getSettings();
+    return settings.then(function(settings) {
+      return contract.mintToken(receiver, tokens, {from: settings.coinbase}, function(err, data) {
+        if(err !== null) return reject(err);
+        resolve(data);
+      });
+    });
+  });
+}
+function contract_transfer_from_owner(contract, sender, recipient, tokens) {
+  return new promise(function(resolve, reject) {
+    var settings = getSettings();
+    return settings.then(function(settings) {
+      return contract.transferFrom(sender, recipient, tokens, {from: settings.coinbase}, function(err, data) {
+        if(err !== null) return reject(err);
+        resolve(data);
+      });
+    });
+  });
+}
+
+
 
 function get_biathlon_balance(contract, account) {
   return new promise(function(resolve,reject) {
