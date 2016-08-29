@@ -121,13 +121,16 @@ function mintTokens(req, res, next) {
 function spendTokens(req,res,next) {
   req.body.tokens = parseInt(req.body.tokens);
   return connectToBlockchain().then(function(contract) {
+    // console.log('attempting to spend ' + req.body.tokens + ' from ' + req.body.sender);
     var spendbill = contract_spend(contract, req.body.sender, req.body.tokens);
     return spendbill.then(function(txhash) {
       db.none('INSERT INTO ethtransactions (txaddress, transaction_type_id, source_account, value, timeof, created_at, updated_at)' + 
-                'VALUES(${txhash}, 2, ${sender}, ${tokens}, now(), now(), now() )',  {txhash: txhash, sender: req.body.sender, tokens: req.body.tokens})
-    }).then(function() {
+      'VALUES(${txhash}, 2, ${sender}, ${tokens}, now(), now(), now() )',  {txhash: txhash, sender: req.body.sender, tokens: req.body.tokens});
+      return txhash;
+    }).then(function(txhash) {
       res.status(200)
         .json({status: 'success',
+      data: txhash,
           message: 'Spent ' + req.body.tokens + ' tokens from account ' + req.body.sender
         })
     });
